@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Chatbot</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        #chatbox {
+            width: 400px;
+            height: 300px;
+            border: 1px solid #ccc;
+            margin: auto;
+            padding: 10px;
+            overflow-y: auto;
+            text-align: left;
+            background-color: #f9f9f9;
+        }
+
+        #userInput {
+            margin-top: 10px;
+        }
+
+        input {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .user {
+            color: blue;
+        }
+
+        .bot {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Simple Chatbot</h2>
+
+<div id="chatbox">
+    <p class="bot"><b>Bot:</b> Hello! Type a message to start chatting.</p>
+</div>
+
+<div id="userInput">
+    <input id="textInput" type="text" placeholder="Type your symptoms...">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+function sendMessage() {
+    let inputField = document.getElementById("textInput");
+    let message = inputField.value;
+
+    if (message.trim() === "") return;
+
+    let chatbox = document.getElementById("chatbox");
+
+    // Show user message
+    chatbox.innerHTML += `<p class="user"><b>You:</b> ${message}</p>`;
+
+    inputField.value = "";
+
+    // Send to Flask backend
+    fetch("/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        chatbox.innerHTML += `<p class="bot"><b>Bot:</b> ${data.response}</p>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+    })
+    .catch(error => {
+        chatbox.innerHTML += `<p class="bot"><b>Bot:</b> Error connecting to server</p>`;
+    });
+}
+
+// ✅ Press ENTER to send message
+document.getElementById("textInput")
+.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
+</script>
+
+</body>
+</html>
